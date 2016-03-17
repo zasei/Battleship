@@ -123,6 +123,12 @@ Vue.component('board', {
 
 });
 
+Vue.component('opponent-board', {
+	template: "#opponent-board-template",
+	props: ['cols', 'rows'],
+
+});
+
 Vue.filter('convertChar', function(n) {
 	return String.fromCharCode(64+n);
 });
