@@ -1,0 +1,25 @@
+{
+  "name": "battleship",
+  "description": "Multiplayer battleship",
+  "main": "server/server.js",
+  "authors": [
+    "Arend van Erk"
+  ],
+  "license": "GNU",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6",
+    "socket.io-client": "^1.4.5",
+    "vue": "^1.0.17"
+  }
+}
