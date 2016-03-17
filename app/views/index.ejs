@@ -23,6 +23,15 @@
 			padding:0;
 			padding:0;
 		}
+
+		.hit-tile {			
+			background-color: tomato;
+		}
+
+		.missed-tile {
+			background: cornflowerblue;
+		}
+
     </style>
   </head>
   <body>
@@ -38,7 +47,7 @@
         	 	
         </div>
         <div class="col-md-6">
-        <h3>Opponent's board <span style="color:red;">Not ready</span></h3>
+        <h3>Opponent's board <span v-show="!opponentReady" style="color:red;">Not ready</span><span v-else style="color:lightgreen;">Ready</span></h3>
         	<opponent-board :cols="10" :rows="10"></board>   
         </div>
 		</div>
@@ -62,13 +71,13 @@
 	        	<tr v-for="i in rows+1">
 	        		<td v-if="n == 0" v-for="n in cols">{{ i == 0 ? '' : i}}</td>
 	        		<td v-if="i == 0 && n != 0" v-for="n in cols + 1">{{ n | convertChar }}</td>
-	        		<td @click="fire($event)" class="tile" v-if="i > 0" v-for="n in cols"></td>
+	        		<td @click="fire($event)" data-hittable="true" class="tile" v-if="i > 0" v-for="n in cols"></td>
 	        	</tr>
         	</table>
       </template>
     </div>
   </body>
-  <script src="/socket.io-client/socket.io.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="/vue/dist/vue.js"></script>
-  <script type="text/javascript" src="/ship.js"></script>
+  <script type="text/javascript" src="/js/ship.js"></script>
 </html>

@@ -1,3 +1,21 @@
+var socket = io();
+
+
+socket.on('id', function(id) {
+	vm.playerId = id;
+});
+
+socket.on('gameInProgress', function() {
+	document.querySelector('body').innerHTML = '<h1>Game in progress</h1>';
+});
+
+socket.on('opponentReady', function() {
+	vm.opponentReady = true;
+	console.log('opponent is ready');
+});
+
+/*-----------------------------------------------------------------------*/
+
 Vue.component('board', {
 	template: "#board-template",
 	props: ['cols', 'rows'],
@@ -127,13 +145,22 @@ Vue.component('opponent-board', {
 	template: "#opponent-board-template",
 	props: ['cols', 'rows'],
 
+	methods: {
+		fire: function(el) {
+			if(el.currentTarget.getAttribute('data-hittable') == 'true') {
+				el.currentTarget.className = 'missed-tile';
+				el.currentTarget.setAttribute('data-hittable', 'false');
+			}
+		}
+	}
+
 });
 
 Vue.filter('convertChar', function(n) {
 	return String.fromCharCode(64+n);
 });
 
-new Vue({
+var vm = new Vue({
 	el: "#game",
 
 	data: {
@@ -146,7 +173,10 @@ new Vue({
 		],
 
 		selectedShip: null,
-		rotated: false
+		rotated: false,
+		opponentReady: false,
+		playerId: null,
+		canFire: false
 	},
 
 	methods: {
@@ -163,6 +193,10 @@ new Vue({
 				if (element.amount > 0)
 					ready = false;
 			});
+
+			if (ready) {
+				socket.emit('ready', this.playerId);
+			}
 
 			return ready;
 
