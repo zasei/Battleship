@@ -1,8 +1,14 @@
 var socket = io();
 
 
-socket.on('id', function(id) {
-	vm.playerId = id;
+socket.on('id', function(obj) {
+	vm.playerId = obj.id;
+	if (obj.pcount == 2)
+		vm.statusMessage = 'Not ready';
+});
+
+socket.on('playerJoined', function() {
+	vm.statusMessage = 'Not ready';
 });
 
 socket.on('gameInProgress', function() {
@@ -11,6 +17,7 @@ socket.on('gameInProgress', function() {
 
 socket.on('opponentReady', function() {
 	vm.opponentReady = true;
+	vm.statusMessage = 'Ready';
 	console.log('opponent is ready');
 });
 
@@ -173,6 +180,7 @@ var vm = new Vue({
 		],
 
 		selectedShip: null,
+		statusMessage: 'Waiting for opponent...',
 		rotated: false,
 		opponentReady: false,
 		playerId: null,

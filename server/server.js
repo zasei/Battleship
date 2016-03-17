@@ -22,7 +22,7 @@ io.on('connection', function (socket) {
 		var id = socket.id;
 
 		players.push({'id' : id, 'ready': false, 'takenHits': 0});
-		socket.emit('id', socket.id);
+		socket.emit('id', {'id':socket.id, 'pcount' : players.length});
 
 		console.log('Player ' + id + ' joined the game');
 		
