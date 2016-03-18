@@ -3,8 +3,17 @@ var socket = io();
 
 socket.on('id', function(obj) {
 	vm.playerId = obj.id;
-	if (obj.pcount == 2)
+	if (obj.playerCount == 2)
 		vm.statusMessage = 'Not ready';
+
+	console.log(obj.players);
+	obj.players.forEach(function(e, i) {
+		if (e.id != obj.id)
+			if (e.ready) {
+				vm.opponentReady = true;
+				vm.statusMessage = 'Ready';
+			}
+	});
 });
 
 socket.on('playerJoined', function() {
@@ -15,10 +24,36 @@ socket.on('gameInProgress', function() {
 	document.querySelector('body').innerHTML = '<h1>Game in progress</h1>';
 });
 
+socket.on('opponentLeft', function () {
+	vm.statusMessage = 'Opponent left';
+});
+
 socket.on('opponentReady', function() {
 	vm.opponentReady = true;
 	vm.statusMessage = 'Ready';
 	console.log('opponent is ready');
+});
+
+socket.on('takeFire', function(cords) {
+
+	var tile = document.querySelector('[data-cords="'+ cords +'"]');
+
+	if (tile.getAttribute('class') == 'placed-tile') {
+		tile.style.backgroundColor = "red";
+	} else {
+		tile.style.backgroundColor = "cornflowerblue";
+	}
+});
+
+socket.on('hit', function(obj) {
+
+	console.log('hit ' + obj.hit);
+
+	if (obj.hit) {
+		document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "red";
+	} else {
+		document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "cornflowerblue";
+	}
 });
 
 /*-----------------------------------------------------------------------*/
@@ -154,9 +189,17 @@ Vue.component('opponent-board', {
 
 	methods: {
 		fire: function(el) {
+
+			if(!(this.$root.ready && this.$root.opponentReady)) return;
+
 			if(el.currentTarget.getAttribute('data-hittable') == 'true') {
-				el.currentTarget.className = 'missed-tile';
+
+				socket.emit('fire', parseInt(el.currentTarget.getAttribute('data-opcords')));
+
+				//el.currentTarget.className = 'missed-tile';
 				el.currentTarget.setAttribute('data-hittable', 'false');
+			} else {
+				console.log('not hittable?');
 			}
 		}
 	}
@@ -180,9 +223,10 @@ var vm = new Vue({
 		],
 
 		selectedShip: null,
-		statusMessage: 'Waiting for opponent...',
+		statusMessage: 'Waiting for opponent',
 		rotated: false,
 		opponentReady: false,
+		ready: false,
 		playerId: null,
 		canFire: false
 	},
@@ -203,7 +247,21 @@ var vm = new Vue({
 			});
 
 			if (ready) {
-				socket.emit('ready', this.playerId);
+				this.ready = true;
+
+				var locs = [];
+
+				var tiles = document.querySelectorAll('.placed-tile');
+
+				
+
+				for (var i = 0; i < tiles.length; i++) 
+					locs.push(parseInt(tiles[i].getAttribute('data-cords')));
+
+				console.log(locs);
+
+
+				socket.emit('ready', {'id' : this.playerId, 'locations' : locs });
 			}
 
 			return ready;
@@ -212,3 +270,5 @@ var vm = new Vue({
 	}
 
 });
+
+Vue.config.debug = true;

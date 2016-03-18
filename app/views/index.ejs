@@ -52,7 +52,7 @@
         </div>
 		</div>
         <div class="col-md-3">
-        <h3>Your ships <button @click="rotated = !rotated" :disabled="ship.amount == 0" type="button" class="btn btn-default btn-xs">Rotate ship [{{rotated ? 'vertical' : 'horizontal'}}]</button></h3>
+        <h3>Your ships <button @click="rotated = !rotated" type="button" class="btn btn-default btn-xs">Rotate ship [{{rotated ? 'vertical' : 'horizontal'}}]</button></h3>
         <p v-for="ship in ships">{{ ship.type }} {{ ship.amount}}x <button @click="setSelectedShip(ship)" :disabled="ship.amount == 0" type="button" class="btn btn-default btn-xs">Select</button></p>
         </div>
       
@@ -71,7 +71,7 @@
 	        	<tr v-for="i in rows+1">
 	        		<td v-if="n == 0" v-for="n in cols">{{ i == 0 ? '' : i}}</td>
 	        		<td v-if="i == 0 && n != 0" v-for="n in cols + 1">{{ n | convertChar }}</td>
-	        		<td @click="fire($event)" data-hittable="true" class="tile" v-if="i > 0" v-for="n in cols"></td>
+	        		<td @click="fire($event)" data-opcords="{{i + '' + n}}" data-hittable="true" class="tile" v-if="i > 0" v-for="n in cols"></td>
 	        	</tr>
         	</table>
       </template>
