@@ -9,4 +9,4 @@ Multiplayer battleship game made with Vue.js, socket.io and Node.js
 - [ ] Implement Rooms
 - [ ] Automatically assign a player to a room
 - [ ] Win/lose message
-- [ ] In-memory datastore to keep track of users and rooms
+- [x] In-memory datastore to keep track of users and rooms
