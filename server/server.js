@@ -1,9 +1,15 @@
 var express = require('express');
 var app = express();
+var uniqid = require('uniqid');
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var io = require('socket.io')(http),
+	socket = require('./socket');
+
+var Datastore = require('nedb'),
+    rooms = new Datastore();
 
 var port = 3000;
+var DEBUG = true;
 
 app.set('views', __dirname + '/../app/views');
 app.set('view engine', 'ejs');
@@ -12,100 +18,53 @@ app.use(express.static(__dirname + '/../app/'));
 
 app.locals.pretty = true;
 
-
-var players = [];
-
-
-function playerById(id, opponent) {
-	opponent = typeof opponent !== 'undefined' ? opponent : false;
-	for (var i = 0; i < players.length; i++) {
-		if (opponent) {
-			if (players[i].id != id) {
-				return players[i];
-			}
-		} else {
-			if (players[i].id == id) {
-				return players[i];
-			}
-		}
-	}
-}
-
-function checkPlayersReady() {
-	var ready = true;
-	for (var i = 0; i < players.length; i++) {
-		if (!players[i].ready)
-			ready = false;
-	}
-
-	return ready;
-}
-
-io.on('connection', function (socket) {
-
-	
-	
-	if (players.length < 2) {
-		var id = socket.id;
-
-		players.push({'id' : id, 'ready': false, 'takenHits': 0, 'locations' : []});
-		socket.emit('id', {'id':socket.id, 'playerCount' : players.length, 'players' : players});
-
-		//console.log('lms ' + playerById(socket.id).id);
-
-		//console.log('Player ' + id + ' joined the game');
-
-		socket.broadcast.emit('playerJoined');
-
-		console.log(players);
-
-	} else {
-		socket.emit('gameInProgress', true);
-	}
-
-	socket.on('ready', function(obj) {
-		players[players.indexOf(playerById(socket.id))].locations = obj.locations;
-		players[players.indexOf(playerById(socket.id))].ready = true;
-		socket.broadcast.emit('opponentReady', true);
-
-		console.log(players[players.indexOf(playerById(socket.id))].locations);
-		//console.log(id + ' is ready ' + players[players.indexOf(playerById(socket.id))].ready);
-
-	});
-
-	socket.on('fire', function(cords) {
-		if (!checkPlayersReady())
-			return;
-
-		console.log(cords);
-
-		var opponent = players[players.indexOf(playerById(socket.id, true))];
-
-		var hit = false;
-
-		for (var i = 0; i < opponent.locations.length; i++) {
-			if (opponent.locations[i] == cords) {
-				players[players.indexOf(playerById(socket.id, true))].takenHits++;
-				hit = true;
-			}
-		}
-		
-		socket.emit('hit', {'cords' : cords, 'hit' : hit});
-
-
-		socket.broadcast.emit('takeFire', cords);
-
-	});
-
-	socket.on('disconnect', function(){
-	    players.splice(players.indexOf(playerById(socket.id)), 1);
-	    socket.broadcast.emit('opponentLeft');
-	});
-
+//Get rid of favicon requests
+app.use(function(q, r, next) {
+	if (q.url !== '/favicon.ico')
+    	next();  
 });
 
-app.get('/', function(req, res) {
-	res.render('index');
+/* TODO
+
+- Create a new room if a user doesn't join a room
+- A user can share the room link to another user and that user can you join the room
+- Implement turns
+- Optional: Spectate mode
+*/
+
+app.get('/:roomName?', function(req, res) {
+
+	var roomName = req.params.roomName;
+	var playerId = uniqid();
+
+	rooms.findOne({room: roomName}, function(err, room) {
+
+		if (room != null) {
+			console.log(roomName + ' exists');
+			if (room.players.length == 1) {
+				rooms.update({room: roomName}, {$addToSet : { players: {'id': playerId, 'ready': false, 'takenHits': 0, 'locations' : [] }} }, {}, function(obj) {
+						console.log('Player joined a room!');
+					});
+			}
+			else if (room.players.length == 2){
+				res.render('progress');
+				return;
+			}
+		} else {
+
+			roomName = uniqid();
+
+			rooms.insert({'room' : roomName, 'players' : [ {'id': playerId,'ready': false, 'takenHits': 0, 'locations' : [] } ]  }, function(err, result) {
+
+			});
+		}
+		res.render('index', { roomName: roomName });
+
+		socket(io, rooms, {'playerId': playerId, 'roomId': roomName});
+
+	});
+	
+
 });
 
 http.listen(port, function() {

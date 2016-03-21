@@ -1,9 +1,10 @@
 var socket = io();
 
 
-socket.on('id', function(obj) {
-	vm.playerId = obj.id;
-	if (obj.playerCount == 2)
+socket.on('init', function(obj) {
+
+	vm.playerState = obj;
+	if (obj.players.length == 2)
 		vm.statusMessage = 'Not ready';
 
 	console.log(obj.players);
@@ -18,10 +19,6 @@ socket.on('id', function(obj) {
 
 socket.on('playerJoined', function() {
 	vm.statusMessage = 'Not ready';
-});
-
-socket.on('gameInProgress', function() {
-	document.querySelector('body').innerHTML = '<h1>Game in progress</h1>';
 });
 
 socket.on('opponentLeft', function () {
@@ -216,10 +213,10 @@ var vm = new Vue({
 	data: {
 		ships: [
 			{ 'type': 'Aircraft carrier', 'size': 5, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 2},
-			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 3},
-			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 3},
-			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 4}
+			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 0}
 		],
 
 		selectedShip: null,
@@ -227,7 +224,7 @@ var vm = new Vue({
 		rotated: false,
 		opponentReady: false,
 		ready: false,
-		playerId: null,
+		playerState: null,
 		canFire: false
 	},
 
@@ -258,10 +255,8 @@ var vm = new Vue({
 				for (var i = 0; i < tiles.length; i++) 
 					locs.push(parseInt(tiles[i].getAttribute('data-cords')));
 
-				console.log(locs);
 
-
-				socket.emit('ready', {'id' : this.playerId, 'locations' : locs });
+				socket.emit('ready', {'playerState' : this.playerState, 'locations' : locs });
 			}
 
 			return ready;
