@@ -1,8 +1,13 @@
 var socket = io();
 
+socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
 
 socket.on('init', function(obj) {
 
+    //console.log(obj.players.length);
+    console.log(obj.players);
+
+    vm.room = obj.room;
 	vm.playerState = obj;
 	if (obj.players.length == 2)
 		vm.statusMessage = 'Not ready';
@@ -15,6 +20,11 @@ socket.on('init', function(obj) {
 				vm.statusMessage = 'Ready';
 			}
 	});
+});
+
+socket.on('canFire', function() {
+    vm.canFire = true;
+    vm.statusMessage = 'Your turn';
 });
 
 socket.on('playerJoined', function() {
@@ -31,14 +41,20 @@ socket.on('opponentReady', function() {
 	console.log('opponent is ready');
 });
 
-socket.on('takeFire', function(cords) {
+socket.on('takeFire', function(obj) {
 
-	var tile = document.querySelector('[data-cords="'+ cords +'"]');
+    if (obj.opponent.takenHits == obj.opponent.locations.length) {
+        alert('YOU LOSE!');
+    }
+
+	var tile = document.querySelector('[data-cords="'+ obj.cords +'"]');
 
 	if (tile.getAttribute('class') == 'placed-tile') {
 		tile.style.backgroundColor = "red";
+        vm.statusMessage = 'Opponent turn';
 	} else {
 		tile.style.backgroundColor = "cornflowerblue";
+        vm.statusMessage = 'Your turn';
 	}
 });
 
@@ -48,8 +64,12 @@ socket.on('hit', function(obj) {
 
 	if (obj.hit) {
 		document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "red";
+        vm.statusMessage = 'Your turn';
+        vm.canFire = true;
 	} else {
 		document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "cornflowerblue";
+        vm.statusMessage = 'Opponent turn';
+        vm.canFire = false;
 	}
 });
 
@@ -187,11 +207,11 @@ Vue.component('opponent-board', {
 	methods: {
 		fire: function(el) {
 
-			if(!(this.$root.ready && this.$root.opponentReady)) return;
+			if(!(this.$root.ready && this.$root.opponentReady && this.$root.canFire)) return;
 
 			if(el.currentTarget.getAttribute('data-hittable') == 'true') {
 
-				socket.emit('fire', parseInt(el.currentTarget.getAttribute('data-opcords')));
+				socket.emit('fire', {'playerState': this.playerState, 'cords' : parseInt(el.currentTarget.getAttribute('data-opcords')) } );
 
 				//el.currentTarget.className = 'missed-tile';
 				el.currentTarget.setAttribute('data-hittable', 'false');
@@ -225,7 +245,8 @@ var vm = new Vue({
 		opponentReady: false,
 		ready: false,
 		playerState: null,
-		canFire: false
+		canFire: false,
+        room: null
 	},
 
 	methods: {
