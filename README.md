@@ -4,7 +4,7 @@ Multiplayer battleship game made with Vue.js, socket.io and Node.js
 ![alt tag](http://i.imgur.com/5qRAPcv.png)
 
 ## Todo
-- [ ] Implement turns
+- [x] Implement turns
 - [ ] Refactor code
 - [x] Implement Rooms
 - [x] Automatically assign a player to a room
