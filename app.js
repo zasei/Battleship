@@ -11,10 +11,10 @@ var Datastore = require('nedb'),
 var port = 3000;
 var DEBUG = true;
 
-app.set('views', __dirname + '/../app/views');
+app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-app.use(express.static(__dirname + '/../bower_components'));
-app.use(express.static(__dirname + '/../app/'));
+app.use(express.static(__dirname + '/bower_components'));
+app.use(express.static(__dirname + '/public/'));
 
 
 app.locals.pretty = true;
@@ -223,6 +223,8 @@ io.on('connection', function (socket) {
 
             if (res != null) {
 
+                socket.leave(res.room);
+
                 socket.broadcast.to(res.room).emit('opponentLeft')
 
                 if (res.players.length == 1) {
@@ -230,15 +232,11 @@ io.on('connection', function (socket) {
 
                     });
                 } else {
-                    rooms.update({"players.id": socket.id}, {$pull: {"players" : {id: socket.id}}}, function(err, res) {
-
-                    });
+                    rooms.update({"players.id": socket.id}, {$pull: {"players" : {id: socket.id}}}, function(err, res) {});
                 }
             }
 
         });
-        // players.splice(players.indexOf(playerById(socket.id)), 1);
-        // 
     });
 
     

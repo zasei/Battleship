@@ -233,10 +233,10 @@ var vm = new Vue({
 	data: {
 		ships: [
 			{ 'type': 'Aircraft carrier', 'size': 5, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 0}
+			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 1},
+			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
+			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
+			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 1}
 		],
 
 		selectedShip: null,
