@@ -3,6 +3,10 @@ var uniqid = require('uniqid');
 
 module.exports.listen = function(http, rooms) {
 
+    /*
+        unfortunately nedb doesn't support the positional operator,
+        so in order to update an object inside an array we can call this function.
+    */
     var updatePlayer = function(id, obj, callback) {
 
         var updatedPlayers = [];
@@ -12,9 +16,9 @@ module.exports.listen = function(http, rooms) {
             for(var i = 0; i < res.players.length; i++) {
 
                 if (res.players[i].id == id)
-                    updatedPlayers.push(obj);
+                    updatedPlayers.push(obj); // if the player we are looking for matches, push the updated player to the array
                 else
-                    updatedPlayers.push(res.players[i]);
+                    updatedPlayers.push(res.players[i]); // not the player we are looking for, keep that player intact
 
             }
 
@@ -28,6 +32,7 @@ module.exports.listen = function(http, rooms) {
 
         rooms.findOne({"players.id": id }, function(err, res) {
 
+            // players can only be ready when there are 2 player in the room
             if (res.players.length != 2) {
                 callback(false);
                 return;
@@ -35,6 +40,7 @@ module.exports.listen = function(http, rooms) {
 
             var ready = true;
             
+            // if there are 2 players and one of them is not ready set ready to false
             for (var i = 0; i < res.players.length; i++)
                 if (!res.players[i].ready)
                     ready = false;
@@ -49,6 +55,7 @@ module.exports.listen = function(http, rooms) {
 
         socket.on('init', function(roomName) {
 
+                // find the room that the client sent to us
                 rooms.findOne({room: roomName}, function(err, room) {
 
                     var playerState;
@@ -56,28 +63,33 @@ module.exports.listen = function(http, rooms) {
                     // check if the room exists
                     if (room != null) {
 
+                        // set the initial playerState
                         playerState = { 'players': room.players, 'id': socket.id, 'room': roomName };
 
                         if (room.players.length == 1) {
 
+                            // add the current player to the playerstate's players
                             playerState.players.push({'id': socket.id, 'ready': false, 'takenHits': 0, 'locations' : [] });
 
+                            // add the current player to players
                             rooms.update({room: roomName}, {$addToSet : { players: {'id': socket.id, 'ready': false, 'takenHits': 0, 'locations' : [] } } }, {}, function(obj, nch) {
                                                                   
                             });
 
                         }
-                        // if the room is full, prevent another to join the room
+                        // if the room is full, prevent another player from joining the room
                         else if (room.players.length == 2){
                             return;
                         }
-                    // the room does not exist, create the room
-                    } else {
-                        //generate a unique roomname
+                    } else { // room does not exist
+
+                        //generate an unique roomname
                         roomName = uniqid();
 
+                        // create a new player state
                         playerState =  { 'players': [ {'id': socket.id,'ready': false, 'takenHits': 0, 'locations' : [] } ], 'id': socket.id, 'room': roomName };
 
+                        // create the room and insert the first player (host)
                         rooms.insert({'room' : roomName, 'players' : [ {'id': socket.id,'ready': false, 'takenHits': 0, 'locations' : [] } ]  }, function(err, result) {
                                             
                         });
@@ -140,7 +152,7 @@ module.exports.listen = function(http, rooms) {
         });
 
         socket.on('fire', function(obj) {
-            
+
             playersReady(socket.id, function(ready) {
 
                 if (ready) {

@@ -1,7 +1,5 @@
 var socket = io();
 
-socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
-
 socket.on('init', function(obj) {
 
     //console.log(obj.players.length);
@@ -88,6 +86,10 @@ Vue.component('board', {
 		}
 	},
 
+	ready: function() {
+		socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
+	},
+
 	methods: {
 
 		placeShip: function(el) {
@@ -101,25 +103,25 @@ Vue.component('board', {
 			var hoveredTile = document.querySelectorAll('.tile-hover');
 
 			var overlap = false;
-
+			
 			for (var i = 0; i < size; i++) {
 
 				if(this.$root.rotated) {
 					if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
 						if (e.className == 'placed-tile') overlap = true;
 					}
 					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - (i)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
 						if (e.className == 'placed-tile') overlap = true;
 					}
 				} else if (!this.$root.rotated) {
-					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 10)) +'"]') != null) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 10)) +'"]');
+					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
 						if (e.className == 'placed-tile') overlap = true;
 					}
 					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * 10)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
 						if (e.className == 'placed-tile') overlap = true;
 					}
 				}
@@ -127,7 +129,6 @@ Vue.component('board', {
 			}
 
 			if (!overlap) {
-
 				this.$root.selectedShip.amount--;
 
 				for (var i = 0; i < hoveredTile.length; i++) {
@@ -149,20 +150,20 @@ Vue.component('board', {
 
 				if(this.$root.rotated) {
 					if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
 						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
 					}
 					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - (i)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
 						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
 					}
 				} else if (!this.$root.rotated) {
-					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 10)) +'"]') != null) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 10)) +'"]');
+					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
 						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
 					}
 					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * 10)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
 						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
 					}
 				}
@@ -181,20 +182,20 @@ Vue.component('board', {
 			for (var i = 0; i < size; i++)
 				if(this.$root.rotated) {
 					if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 1)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
 						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
 					}
 					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((i) * 1)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
 						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
 					}
 				} else if (!this.$root.rotated) {
-					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 10)) +'"]') != null) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * 10)) +'"]');
+					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
 						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
 					}
 					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * 10)) +'"]');
+						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
 						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
 					}
 				}
@@ -236,15 +237,15 @@ var vm = new Vue({
 	data: {
 		ships: [
 			{ 'type': 'Aircraft carrier', 'size': 5, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 0}
+			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 1},
+			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
+			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
+			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 1}
 		],
 
 		selectedShip: null,
 		statusMessage: 'Waiting for opponent',
-		rotated: false,
+		rotated: false, //vertical
 		opponentReady: false,
 		ready: false,
 		playerState: null,
