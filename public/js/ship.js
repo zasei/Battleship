@@ -7,7 +7,7 @@ socket.on('init', function(obj) {
     //console.log(obj.players.length);
     console.log(obj.players);
 
-    vm.room = obj.room;
+    vm.room = window.location + obj.room;
 	vm.playerState = obj;
 	if (obj.players.length == 2)
 		vm.statusMessage = 'Not ready';
@@ -22,9 +22,12 @@ socket.on('init', function(obj) {
 	});
 });
 
-socket.on('canFire', function() {
-    vm.canFire = true;
-    vm.statusMessage = 'Your turn';
+socket.on('canFire', function(obj) {
+	// check if current user or opponent can fire
+	if(vm.playerState.id == obj.id)
+    	vm.canFire = true;
+    else
+    	vm.canFire = false;
 });
 
 socket.on('playerJoined', function() {
@@ -233,10 +236,10 @@ var vm = new Vue({
 	data: {
 		ships: [
 			{ 'type': 'Aircraft carrier', 'size': 5, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 1}
+			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 0}
 		],
 
 		selectedShip: null,
@@ -256,6 +259,14 @@ var vm = new Vue({
 	},
 
 	computed: {
+
+		isHost: function() {
+			if (window.location.pathname == '/')
+				return true;
+
+			return false;
+		},
+
 		ready: function() {
 			var ready = true;
 

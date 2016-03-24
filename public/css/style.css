@@ -1,11 +1,11 @@
 td {
-	width:50px;
-	height:50px;
+	width:30px;
+	height:30px;
 	-webkit-box-sizing: border-box;
 }
 
 tr:first-child > td, td:first-child {
-	padding-left: 20px;
+	padding-left: 10px;
 }
 
 .tile:hover, .tile-hover, .placed-tile {

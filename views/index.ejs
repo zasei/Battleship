@@ -8,15 +8,18 @@
   <body>
     <div class="container">      
       <div id="game">
-      <h3 v-show="room != null">Share this URL with a friend <input type="text" onClick="this.select();" value="localhost:3000/{{room}}" class="form-control"></h1>
+      <h3 v-if="room != null && isHost">Share this URL with a friend <input type="text" onClick="this.select();" value="{{room}}" class="form-control"></h1>
+      <h3 v-else>Welcome to battleship!</h3>
       <div class="row">
-      	<div class="col-md-6">
-      		<h3>Your board <span v-show="!ready" style="color:red;">Not ready</span><span v-else style="color:lightgreen;">Ready</span></h3>
+      	<div class="col-md-4">
+          <h4 v-show="opponentReady && ready && canFire" >Your turn</h4>
+      		<h4>Your board <span v-show="!ready" style="color:red;">Not ready</span><span v-else style="color:lightgreen;">Ready</span></h4>
         	<board :cols="10" :rows="10"></board>
         	 	
         </div>
-        <div class="col-md-6">
-        <h3>Opponent's board {{statusMessage}}</h3>
+        <div class="col-md-4">
+        <h4 v-show="opponentReady && ready && !canFire" >Opponent's turn</h4>
+        <h4>Opponent's board {{statusMessage}}</h4>
         	<opponent-board :cols="10" :rows="10"></board>   
         </div>
 		</div>
