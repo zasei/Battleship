@@ -103,7 +103,7 @@ module.exports.listen = function(http, rooms) {
             });
 
         });
-
+        
         socket.on('ready', function(obj) {
 
             rooms.findOne({room: obj.playerState.room}, function(err, res) {

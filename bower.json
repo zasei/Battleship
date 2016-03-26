@@ -20,6 +20,6 @@
   "dependencies": {
     "bootstrap": "^3.3.6",
     "socket.io-client": "^1.4.5",
-    "vue": "^1.0.17"
+    "vue": "^1.0.19"
   }
 }

@@ -81,9 +81,7 @@ Vue.component('board', {
 	props: ['cols', 'rows'],
 
 	computed: {
-		chr: function(n) {
-			return String.fromCharCode(65);
-		}
+		chr: function(n) { return String.fromCharCode(65); }
 	},
 
 	ready: function() {
@@ -217,10 +215,7 @@ Vue.component('opponent-board', {
 
 				socket.emit('fire', {'playerState': this.playerState, 'cords' : parseInt(el.currentTarget.getAttribute('data-opcords')) } );
 
-				//el.currentTarget.className = 'missed-tile';
 				el.currentTarget.setAttribute('data-hittable', 'false');
-			} else {
-				console.log('not hittable?');
 			}
 		}
 	}
@@ -235,14 +230,15 @@ var vm = new Vue({
 	el: "#game",
 
 	data: {
+
+		// put this on the server side
 		ships: [
 			{ 'type': 'Aircraft carrier', 'size': 5, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 1}
+			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
+			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 0}
 		],
-
 		selectedShip: null,
 		statusMessage: 'Waiting for opponent',
 		rotated: false, //vertical
@@ -279,17 +275,14 @@ var vm = new Vue({
 			if (ready) {
 				this.ready = true;
 
-				var locs = [];
+				var locations = [];
 
 				var tiles = document.querySelectorAll('.placed-tile');
 
+				for (var i = 0; i < tiles.length; i++)
+					locations.push(parseInt(tiles[i].getAttribute('data-cords')));
 				
-
-				for (var i = 0; i < tiles.length; i++) 
-					locs.push(parseInt(tiles[i].getAttribute('data-cords')));
-
-
-				socket.emit('ready', {'playerState' : this.playerState, 'locations' : locs });
+				socket.emit('ready', {'playerState' : this.playerState, 'locations' : locations });
 			}
 
 			return ready;

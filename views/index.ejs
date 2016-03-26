@@ -32,8 +32,8 @@
       <template id="board-template">
       		<table border="1">
 	        	<tr v-for="i in rows+1">
-	        		<td v-if="n == 0" v-for="n in cols">{{ i == 0 ? '' : i}}</td>
-	        		<td v-if="i == 0 && n != 0" v-for="n in cols + 1">{{ n | convertChar }}</td>
+	        		<td v-for="n in cols+1" v-if="n == 0">{{ i == 0 ? '' : i}}</td>
+	        		<td v-for="n in cols+1" v-if="i == 0 && n != 0">{{ n | convertChar }}</td>
 	        		<td @click="placeShip($event)" data-cords="{{i + '' + n}}" v-on:mouseleave="setDef($event)" v-on:mouseover="changeStyle($event)" class="tile" v-if="i > 0" v-for="n in cols"></td>
 	        	</tr>
         	</table>
@@ -41,8 +41,8 @@
       <template id="opponent-board-template">
       		<table border="1">
 	        	<tr v-for="i in rows+1">
-	        		<td v-if="n == 0" v-for="n in cols">{{ i == 0 ? '' : i}}</td>
-	        		<td v-if="i == 0 && n != 0" v-for="n in cols + 1">{{ n | convertChar }}</td>
+	        		<td v-for="n in cols+1" v-if="n == 0">{{ i == 0 ? '' : i}}</td>
+	        		<td v-for="n in cols+1" v-if="i == 0 && n != 0">{{ n | convertChar }}</td>
 	        		<td @click="fire($event)" data-opcords="{{i + '' + n}}" data-hittable="true" class="tile" v-if="i > 0" v-for="n in cols"></td>
 	        	</tr>
         	</table>
