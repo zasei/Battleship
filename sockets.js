@@ -3,10 +3,39 @@ var uniqid = require('uniqid');
 
 module.exports.listen = function(http, rooms) {
 
-    /*
-        unfortunately nedb doesn't support the positional operator,
-        so in order to update an object inside an array we can call this function.
-    */
+    var ships = [
+        { 'type': 'Aircraft carrier', 'size': 5, 'location': [], 'hits': 0, 'amount': 1},
+        { 'type': 'Battleship', 'size': 4, 'location': [], 'hits': 0, 'amount': 0},
+        { 'type': 'Submarine', 'size': 3, 'location': [], 'hits': 0, 'amount': 0},
+        { 'type': 'Cruiser', 'size': 3, 'location': [], 'hits': 0, 'amount': 0},
+        { 'type': 'Destroyer', 'size': 2, 'location': [], 'hits': 0, 'amount': 0}
+    ];
+
+    var setCanFire = function(id, callback) {
+
+        rooms.findOne({'players.id': id}, function(err, res) {
+
+            
+
+            if (res != null) {
+
+                var players = res.players;
+
+                for (var i = 0; i < players.length; i++) {
+                    if (players[i].id == id) players[i].canFire = true;
+                    else players[i].canFire = false;
+                }
+
+                rooms.update({room: res.room}, { $set: { players: players } }, function (err, numReplaced) {
+                    callback(players);
+                });
+
+            }
+
+        });
+
+    };
+
     var updatePlayer = function(id, obj, callback) {
 
         var updatedPlayers = [];
@@ -64,17 +93,15 @@ module.exports.listen = function(http, rooms) {
                     if (room != null) {
 
                         // set the initial playerState
-                        playerState = { 'players': room.players, 'id': socket.id, 'room': roomName };
+                        playerState = { 'players': room.players, 'ships':  ships, 'id': socket.id, 'room': roomName };
 
                         if (room.players.length == 1) {
 
                             // add the current player to the playerstate's players
-                            playerState.players.push({'id': socket.id, 'ready': false, 'takenHits': 0, 'locations' : [] });
+                            playerState.players.push({'id': socket.id, 'canFire': false, 'ready': false, 'takenHits': 0, 'ships' : ships });
 
                             // add the current player to players
-                            rooms.update({room: roomName}, {$addToSet : { players: {'id': socket.id, 'ready': false, 'takenHits': 0, 'locations' : [] } } }, {}, function(obj, nch) {
-                                                                  
-                            });
+                            rooms.update({room: roomName}, {$addToSet : { players: {'id': socket.id, 'canFire': false, 'ready': false, 'takenHits': 0, 'ships' : ships } } }, {}, function(obj, nch) {});
 
                         }
                         // if the room is full, prevent another player from joining the room
@@ -87,10 +114,10 @@ module.exports.listen = function(http, rooms) {
                         roomName = uniqid();
 
                         // create a new player state
-                        playerState =  { 'players': [ {'id': socket.id,'ready': false, 'takenHits': 0, 'locations' : [] } ], 'id': socket.id, 'room': roomName };
+                        playerState =  { 'players': [ {'id': socket.id,'ready': false, 'canFire': false, 'takenHits': 0, 'ships' : ships } ], 'ships': ships, 'id': socket.id, 'room': roomName };
 
                         // create the room and insert the first player (host)
-                        rooms.insert({'room' : roomName, 'players' : [ {'id': socket.id,'ready': false, 'takenHits': 0, 'locations' : [] } ]  }, function(err, result) {
+                        rooms.insert({'room' : roomName, 'players' : [ {'id': socket.id, 'ready': false, 'canFire': false, 'takenHits': 0, 'ships' : ships } ]  }, function(err, result) {
                                             
                         });
                     }
@@ -131,7 +158,7 @@ module.exports.listen = function(http, rooms) {
                 rooms.update({ room: obj.playerState.room}, { $set: { players: updatedPlayers } }, function (err, numReplaced) {
 
                     rooms.findOne({room: obj.playerState.room}, function(err, res) {
-                        console.log(res.players);
+                        //console.log(res.players);
                     });
 
                 });
@@ -140,8 +167,22 @@ module.exports.listen = function(http, rooms) {
 
                 // Randomly select a player to fire first
                 if (bothReady) {
+
                     var chooseRandomPlayer = res.players[~~(Math.random() * 2)];
-                    io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);           
+                    //chooseRandomPlayer.canFire = true;
+
+                    setCanFire(chooseRandomPlayer.id, function() {
+                        io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);
+                    });
+
+                    // updatePlayer(chooseRandomPlayer.id, chooseRandomPlayer, function(updatedPlayers) {
+
+                    //     rooms.update({ "players.id": socket.id}, { $set: { players: updatedPlayers } }, function (err, numReplaced) {
+                    //         io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);
+                    //     });
+
+                    // });
+                         
                 }
 
             });
@@ -165,12 +206,10 @@ module.exports.listen = function(http, rooms) {
                         for (var i = 0; i < res.players.length; i++) {
 
                             if (res.players[i].id != socket.id) {
-
                                 opponent = res.players[i];
 
                                 for (var n = 0; n < res.players[i].locations.length; n++)
-
-                                    if (res.players[i].locations[n] == obj.cords)
+                                    if (res.players[i].locations[n] == obj.cords && res.players[i].canFire)
                                         hit = true;
 
                             }
@@ -187,7 +226,11 @@ module.exports.listen = function(http, rooms) {
 
                             });
                         } else {
-                            io.sockets.in(res.room).emit('canFire', opponent);
+
+                            setCanFire(opponent.id, function() {
+                                io.sockets.in(res.room).emit('canFire', opponent);
+                            });
+                            
                             // socket.broadcast.to(opponent.id).emit('canFire', true);
                             // socket.emit('canFire', false)
                         }

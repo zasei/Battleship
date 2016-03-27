@@ -1,10 +1,13 @@
 var socket = io();
 
+
+socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
+
 socket.on('init', function(obj) {
 
     //console.log(obj.players.length);
     console.log(obj.players);
-
+    vm.ships = obj.ships;
     vm.room = window.location + obj.room;
 	vm.playerState = obj;
 	if (obj.players.length == 2)
@@ -22,6 +25,7 @@ socket.on('init', function(obj) {
 
 socket.on('canFire', function(obj) {
 	// check if current user or opponent can fire
+	console.log(obj.id + '  ' + vm.playerState.id);
 	if(vm.playerState.id == obj.id)
     	vm.canFire = true;
     else
@@ -84,10 +88,6 @@ Vue.component('board', {
 		chr: function(n) { return String.fromCharCode(65); }
 	},
 
-	ready: function() {
-		socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
-	},
-
 	methods: {
 
 		placeShip: function(el) {
@@ -129,8 +129,11 @@ Vue.component('board', {
 			if (!overlap) {
 				this.$root.selectedShip.amount--;
 
+				var location = [];
+
 				for (var i = 0; i < hoveredTile.length; i++) {
 					hoveredTile[i].className = 'placed-tile';
+					location.push(hoveredTile[i].getAttribute('data-cords'));
 				}
 			}
 		},
@@ -229,16 +232,12 @@ Vue.filter('convertChar', function(n) {
 var vm = new Vue({
 	el: "#game",
 
-	data: {
+	ready: function() {
+		//socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
+	},
 
-		// put this on the server side
-		ships: [
-			{ 'type': 'Aircraft carrier', 'size': 5, 'alive': true, 'hits': 0, 'amount': 1},
-			{ 'type': 'Battleship', 'size': 4, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Submarine', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Cruiser', 'size': 3, 'alive': true, 'hits': 0, 'amount': 0},
-			{ 'type': 'Destroyer', 'size': 2, 'alive': true, 'hits': 0, 'amount': 0}
-		],
+	data: {
+		ships: [],	
 		selectedShip: null,
 		statusMessage: 'Waiting for opponent',
 		rotated: false, //vertical

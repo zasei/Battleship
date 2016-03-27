@@ -9,13 +9,20 @@ tr:first-child > td, td:first-child {
 }
 
 .tile:hover, .tile-hover, .placed-tile {
-	background-color: lightgray;
+	background-color: #464545;
 	cursor:pointer;
 }
 
 table {
 	padding:0;
 	padding:0;
+
+	border:1px solid white;
+}
+
+table td {
+	border:1px solid white !important;
+	
 }
 
 .hit-tile {			
