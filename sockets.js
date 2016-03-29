@@ -11,14 +11,53 @@ module.exports.listen = function(http, rooms) {
         { 'type': 'Destroyer', 'size': 2, 'location': [], 'hits': 0, 'amount': 0}
     ];
 
-    var setCanFire = function(id, callback) {
+       function shipTiles() {
+
+            var tiles = 0;
+
+            for(var i = 0; i < ships.length; i++) {
+                if (ships[i].amount > 0) tiles += ships[i].amount * ships[i].size;
+            }
+
+            return tiles;
+
+        }
+
+
+    var updateShip = function(id, ship, callback) {
 
         rooms.findOne({'players.id': id}, function(err, res) {
 
-            
+            var players = [];
 
+            var player;
+
+            for (var i = 0; i < res.players.length; i++) {
+                if (res.players[i].id == id) player = res.players[i];
+                else players.push(res.players[i]);
+            }
+
+            for(var i = 0; i < player.ships.length; i++) {
+                if(player.ships[i].type == ship.type) player.ships[i] = ship;
+            }
+
+            players.push(player);
+
+            rooms.update({room: res.room}, { $set: {players: players} }, function(err, numReplaced) {
+                rooms.findOne({}, function(err, res) {
+                    console.log(res.players[0].ships);
+                });
+            });
+
+
+        });
+
+    };
+
+    var setCanFire = function(id, callback) {
+
+        rooms.findOne({'players.id': id}, function(err, res) {
             if (res != null) {
-
                 var players = res.players;
 
                 for (var i = 0; i < players.length; i++) {
@@ -169,20 +208,9 @@ module.exports.listen = function(http, rooms) {
                 if (bothReady) {
 
                     var chooseRandomPlayer = res.players[~~(Math.random() * 2)];
-                    //chooseRandomPlayer.canFire = true;
-
                     setCanFire(chooseRandomPlayer.id, function() {
                         io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);
                     });
-
-                    // updatePlayer(chooseRandomPlayer.id, chooseRandomPlayer, function(updatedPlayers) {
-
-                    //     rooms.update({ "players.id": socket.id}, { $set: { players: updatedPlayers } }, function (err, numReplaced) {
-                    //         io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);
-                    //     });
-
-                    // });
-                         
                 }
 
             });
@@ -208,9 +236,19 @@ module.exports.listen = function(http, rooms) {
                             if (res.players[i].id != socket.id) {
                                 opponent = res.players[i];
 
-                                for (var n = 0; n < res.players[i].locations.length; n++)
-                                    if (res.players[i].locations[n] == obj.cords && res.players[i].canFire)
-                                        hit = true;
+                                for (var n = 0; n < res.players[i].ships.length; n++) {
+
+                                    //console.log(res.players[i].ships[n]);
+                                    for (var x = 0; x < res.players[i].ships[n].location.length; x++) {
+
+                                        //console.log(res.players[i].ships[n].location[x]);
+                                        //if (res.players[i].ships[n].location[x] == obj.cords)
+
+                                        if (res.players[i].ships[n].location[x] == obj.cords && !opponent.canFire) {
+                                            hit = true;
+                                        }
+                                    }
+                                }
 
                             }
 
@@ -218,6 +256,12 @@ module.exports.listen = function(http, rooms) {
 
                         if(hit) {
                             opponent.takenHits++;
+
+                            if (opponent.takenHits == shipTiles()) {
+                                socket.emit('win');
+                                io.sockets.in(res.room).emit('gameover', res.players);
+
+                            }
 
                             updatePlayer(opponent.id, opponent, function(updatedPlayers) {
 
@@ -230,9 +274,6 @@ module.exports.listen = function(http, rooms) {
                             setCanFire(opponent.id, function() {
                                 io.sockets.in(res.room).emit('canFire', opponent);
                             });
-                            
-                            // socket.broadcast.to(opponent.id).emit('canFire', true);
-                            // socket.emit('canFire', false)
                         }
 
                         socket.broadcast.to(res.room).emit('takeFire', { 'cords' : obj.cords, 'opponent': opponent});
@@ -240,6 +281,18 @@ module.exports.listen = function(http, rooms) {
 
                     });
                 }
+
+            });
+
+        });
+
+        socket.on('place', function(ship) {
+            //console.log(ship);
+            /*
+                when a user places a ship, check if the ship has already been placed.
+                update the ship in the db.
+            */
+            updateShip(socket.id, ship, function() {
 
             });
 

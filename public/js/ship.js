@@ -23,6 +23,38 @@ socket.on('init', function(obj) {
 	});
 });
 
+socket.on('gameover', function(players) {
+
+	//console.log(vm.playerState.id);
+
+	//console.log(players);
+
+	var opponent;
+
+	for (var i = 0; i < players.length; i++) {
+		if (players[i].id == vm.playerState.id) opponent = players[i];
+	}
+
+	console.log(opponent);
+
+	for (var i = 0; i < opponent.ships.length; i++) {
+
+		for (var n = 0; n < opponent.ships[i].location.length; n++) {
+			document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor = "#464545";
+		}
+
+	}
+
+	// opponent.ships.forEach(function(i, ship) {
+
+	// 	ship.location.forEach(function(i, loc) {
+	// 		document.querySelector('[data-opcords="'+ loc +'"]').style.backgroundColor = "#464545";
+	// 	});
+
+	// });
+
+});
+
 socket.on('canFire', function(obj) {
 	// check if current user or opponent can fire
 	console.log(obj.id + '  ' + vm.playerState.id);
@@ -44,6 +76,10 @@ socket.on('opponentReady', function() {
 	vm.opponentReady = true;
 	vm.statusMessage = 'Ready';
 	console.log('opponent is ready');
+});
+
+socket.on('win', function() {
+	alert('you win');
 });
 
 socket.on('takeFire', function(obj) {
@@ -129,12 +165,11 @@ Vue.component('board', {
 			if (!overlap) {
 				this.$root.selectedShip.amount--;
 
-				var location = [];
-
 				for (var i = 0; i < hoveredTile.length; i++) {
 					hoveredTile[i].className = 'placed-tile';
-					location.push(hoveredTile[i].getAttribute('data-cords'));
+					this.$root.selectedShip.location.push(hoveredTile[i].getAttribute('data-cords'));
 				}
+				socket.emit('place', this.$root.selectedShip);
 			}
 		},
 
@@ -232,10 +267,6 @@ Vue.filter('convertChar', function(n) {
 var vm = new Vue({
 	el: "#game",
 
-	ready: function() {
-		//socket.emit('init', window.location.pathname.substring(1, window.location.pathname.length));
-	},
-
 	data: {
 		ships: [],	
 		selectedShip: null,
@@ -264,6 +295,9 @@ var vm = new Vue({
 		},
 
 		ready: function() {
+
+			if (this.ships.length == 0) return;
+
 			var ready = true;
 
 			this.ships.forEach(function(element, index) {
