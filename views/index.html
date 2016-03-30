@@ -17,12 +17,12 @@
       <div class="row">
       	<div class="col-md-4">
           <h4 v-show="opponentReady && ready && canFire" >Your turn</h4>
+          <h4 v-show="opponentReady && ready && !canFire" >Opponent's turn</h4>
       		<h4>Your board <span v-show="!ready">Not ready</span><span v-else>Ready</span></h4>
         	<board :cols="10" :rows="10"></board>
         	 	
         </div>
         <div class="col-md-4">
-        <h4 v-show="opponentReady && ready && !canFire" >Opponent's turn</h4>
         <h4>Opponent's board {{statusMessage}}</h4>
         	<opponent-board :cols="10" :rows="10"></board>   
         </div>

@@ -25,14 +25,10 @@ socket.on('init', function(obj) {
 
 socket.on('gameover', function(players) {
 
-	//console.log(vm.playerState.id);
-
-	//console.log(players);
-
 	var opponent;
 
 	for (var i = 0; i < players.length; i++) {
-		if (players[i].id == vm.playerState.id) opponent = players[i];
+		if (players[i].id != vm.playerState.id) opponent = players[i];
 	}
 
 	console.log(opponent);
@@ -44,14 +40,6 @@ socket.on('gameover', function(players) {
 		}
 
 	}
-
-	// opponent.ships.forEach(function(i, ship) {
-
-	// 	ship.location.forEach(function(i, loc) {
-	// 		document.querySelector('[data-opcords="'+ loc +'"]').style.backgroundColor = "#464545";
-	// 	});
-
-	// });
 
 });
 
