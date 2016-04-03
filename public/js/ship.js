@@ -36,7 +36,8 @@ socket.on('gameover', function(players) {
 	for (var i = 0; i < opponent.ships.length; i++) {
 
 		for (var n = 0; n < opponent.ships[i].location.length; n++) {
-			document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor = "#464545";
+			if (document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor != "red")
+				document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor = "#464545";
 		}
 
 	}
