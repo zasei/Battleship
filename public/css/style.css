@@ -33,6 +33,6 @@ table td {
 	background: cornflowerblue;
 }
 
-body {
-	
-}
+#messages { list-style-type: none; margin: 0; padding: 0; overflow-y: scroll;margin-bottom: 10px;}
+#messages li { padding: 5px 10px; word-wrap: break-word;}
+#messages li:nth-child(odd) { background: #222222; }

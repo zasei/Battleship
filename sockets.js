@@ -121,6 +121,15 @@ module.exports.listen = function(http, rooms) {
 
     io.on('connection', function (socket) {
 
+        socket.on('message', function(message) {
+            rooms.findOne({"players.id": socket.id }, function(err, res) {
+                if (err == null)
+                    socket.broadcast.to(res.room).emit('newMessage', message);
+
+            });
+
+        });
+
         socket.on('init', function(roomName) {
 
                 // find the room that the client sent to us

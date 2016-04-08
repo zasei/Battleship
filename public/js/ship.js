@@ -9,66 +9,74 @@ socket.on('init', function(obj) {
     console.log(obj.players);
     vm.ships = obj.ships;
     vm.room = window.location + obj.room;
-	vm.playerState = obj;
-	if (obj.players.length == 2)
-		vm.statusMessage = 'Not ready';
+    vm.playerState = obj;
+    if (obj.players.length == 2)
+        vm.statusMessage = 'Not ready';
 
-	console.log(obj.players);
-	obj.players.forEach(function(e, i) {
-		if (e.id != obj.id)
-			if (e.ready) {
-				vm.opponentReady = true;
-				vm.statusMessage = 'Ready';
-			}
-	});
+    console.log(obj.players);
+    obj.players.forEach(function(e, i) {
+        if (e.id != obj.id)
+            if (e.ready) {
+                vm.opponentReady = true;
+                vm.statusMessage = 'Ready';
+            }
+    });
+});
+
+socket.on('newMessage', function(mes) {
+    var tbox = document.querySelector('#messages');
+    var li = document.createElement('li');
+    li.innerText = "Opponent said: " + mes;
+    tbox.appendChild(li);
+    tbox.scrollTop = tbox.scrollHeight;
 });
 
 socket.on('gameover', function(players) {
 
-	var opponent;
+    var opponent;
 
-	for (var i = 0; i < players.length; i++) {
-		if (players[i].id != vm.playerState.id) opponent = players[i];
-	}
+    for (var i = 0; i < players.length; i++) {
+        if (players[i].id != vm.playerState.id) opponent = players[i];
+    }
 
-	console.log(opponent);
+    console.log(opponent);
 
-	for (var i = 0; i < opponent.ships.length; i++) {
+    for (var i = 0; i < opponent.ships.length; i++) {
 
-		for (var n = 0; n < opponent.ships[i].location.length; n++) {
-			if (document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor != "red")
-				document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor = "#464545";
-		}
+        for (var n = 0; n < opponent.ships[i].location.length; n++) {
+            if (document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor != "red")
+                document.querySelector('[data-opcords="'+ opponent.ships[i].location[n] +'"]').style.backgroundColor = "#464545";
+        }
 
-	}
+    }
 
 });
 
 socket.on('canFire', function(obj) {
-	// check if current user or opponent can fire
-	console.log(obj.id + '  ' + vm.playerState.id);
-	if(vm.playerState.id == obj.id)
-    	vm.canFire = true;
+    // check if current user or opponent can fire
+    console.log(obj.id + '  ' + vm.playerState.id);
+    if(vm.playerState.id == obj.id)
+        vm.canFire = true;
     else
-    	vm.canFire = false;
+        vm.canFire = false;
 });
 
 socket.on('playerJoined', function() {
-	vm.statusMessage = 'Not ready';
+    vm.statusMessage = 'Not ready';
 });
 
 socket.on('opponentLeft', function () {
-	vm.statusMessage = 'Opponent left';
+    vm.statusMessage = 'Opponent left';
 });
 
 socket.on('opponentReady', function() {
-	vm.opponentReady = true;
-	vm.statusMessage = 'Ready';
-	console.log('opponent is ready');
+    vm.opponentReady = true;
+    vm.statusMessage = 'Ready';
+    console.log('opponent is ready');
 });
 
 socket.on('win', function() {
-	alert('you win');
+    alert('you win');
 });
 
 socket.on('takeFire', function(obj) {
@@ -77,240 +85,252 @@ socket.on('takeFire', function(obj) {
         alert('YOU LOSE!');
     }
 
-	var tile = document.querySelector('[data-cords="'+ obj.cords +'"]');
+    var tile = document.querySelector('[data-cords="'+ obj.cords +'"]');
 
-	if (tile.getAttribute('class') == 'placed-tile') {
-		tile.style.backgroundColor = "red";
+    if (tile.getAttribute('class') == 'placed-tile') {
+        tile.style.backgroundColor = "red";
         vm.statusMessage = 'Opponent turn';
-	} else {
-		tile.style.backgroundColor = "cornflowerblue";
+    } else {
+        tile.style.backgroundColor = "cornflowerblue";
         vm.statusMessage = 'Your turn';
-	}
+    }
 });
 
 socket.on('hit', function(obj) {
 
-	console.log('hit ' + obj.hit);
+    console.log('hit ' + obj.hit);
 
-	if (obj.hit) {
-		document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "red";
+    if (obj.hit) {
+        document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "red";
         vm.statusMessage = 'Your turn';
         vm.canFire = true;
-	} else {
-		document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "cornflowerblue";
+    } else {
+        document.querySelector('[data-opcords="'+ obj.cords +'"]').style.backgroundColor = "cornflowerblue";
         vm.statusMessage = 'Opponent turn';
         vm.canFire = false;
-	}
+    }
 });
 
 /*-----------------------------------------------------------------------*/
 
 Vue.component('board', {
-	template: "#board-template",
-	props: ['cols', 'rows'],
+    template: "#board-template",
+    props: ['cols', 'rows'],
 
-	computed: {
-		chr: function(n) { return String.fromCharCode(65); }
-	},
+    computed: {
+        chr: function(n) { return String.fromCharCode(65); }
+    },
 
-	methods: {
+    methods: {
 
-		placeShip: function(el) {
+        placeShip: function(el) {
 
-			if(this.$root.selectedShip == null || this.$root.selectedShip.amount == 0)
-				return;
+            if(this.$root.selectedShip == null || this.$root.selectedShip.amount == 0)
+                return;
 
-			var setCords = el.currentTarget.getAttribute('data-cords');
-			var size = this.$root.selectedShip.size;
+            var setCords = el.currentTarget.getAttribute('data-cords');
+            var size = this.$root.selectedShip.size;
 
-			var hoveredTile = document.querySelectorAll('.tile-hover');
+            var hoveredTile = document.querySelectorAll('.tile-hover');
 
-			var overlap = false;
-			
-			for (var i = 0; i < size; i++) {
+            var overlap = false;
+            
+            for (var i = 0; i < size; i++) {
 
-				if(this.$root.rotated) {
-					if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
-						if (e.className == 'placed-tile') overlap = true;
-					}
-					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
-						if (e.className == 'placed-tile') overlap = true;
-					}
-				} else if (!this.$root.rotated) {
-					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
-						if (e.className == 'placed-tile') overlap = true;
-					}
-					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
-						if (e.className == 'placed-tile') overlap = true;
-					}
-				}
+                if(this.$root.rotated) {
+                    if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
+                        if (e.className == 'placed-tile') overlap = true;
+                    }
+                    else {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
+                        if (e.className == 'placed-tile') overlap = true;
+                    }
+                } else if (!this.$root.rotated) {
+                    if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
+                        if (e.className == 'placed-tile') overlap = true;
+                    }
+                    else {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
+                        if (e.className == 'placed-tile') overlap = true;
+                    }
+                }
 
-			}
+            }
 
-			if (!overlap) {
-				this.$root.selectedShip.amount--;
+            if (!overlap) {
+                this.$root.selectedShip.amount--;
 
-				for (var i = 0; i < hoveredTile.length; i++) {
-					hoveredTile[i].className = 'placed-tile';
-					this.$root.selectedShip.location.push(hoveredTile[i].getAttribute('data-cords'));
-				}
-				socket.emit('place', this.$root.selectedShip);
-			}
-		},
+                for (var i = 0; i < hoveredTile.length; i++) {
+                    hoveredTile[i].className = 'placed-tile';
+                    this.$root.selectedShip.location.push(hoveredTile[i].getAttribute('data-cords'));
+                }
+                socket.emit('place', this.$root.selectedShip);
+            }
+        },
 
-		changeStyle: function(el) {
+        changeStyle: function(el) {
 
-			if(this.$root.selectedShip == null || this.$root.selectedShip.amount == 0)
-				return;
+            if(this.$root.selectedShip == null || this.$root.selectedShip.amount == 0)
+                return;
 
-			var setCords = el.currentTarget.getAttribute('data-cords');
+            var setCords = el.currentTarget.getAttribute('data-cords');
 
-			var size = this.$root.selectedShip.size;
+            var size = this.$root.selectedShip.size;
 
-			for (var i = 0; i < size; i++) {
+            for (var i = 0; i < size; i++) {
 
-				if(this.$root.rotated) {
-					if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
-						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
-					}
-					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
-						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
-					}
-				} else if (!this.$root.rotated) {
-					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
-						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
-					}
-					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
-						e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
-					}
-				}
+                if(this.$root.rotated) {
+                    if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
+                        e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
+                    }
+                    else {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
+                        e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
+                    }
+                } else if (!this.$root.rotated) {
+                    if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
+                        e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
+                    }
+                    else {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
+                        e.className = e.className == 'placed-tile' ? 'placed-tile' : 'tile-hover';
+                    }
+                }
 
-			}
+            }
 
-		},
+        },
 
-		setDef: function(el) {
-			if(this.$root.selectedShip == null)
-				return;
-			var setCords = el.currentTarget.getAttribute('data-cords');
+        setDef: function(el) {
+            if(this.$root.selectedShip == null)
+                return;
+            var setCords = el.currentTarget.getAttribute('data-cords');
 
-			var size = this.$root.selectedShip.size;
+            var size = this.$root.selectedShip.size;
 
-			for (var i = 0; i < size; i++)
-				if(this.$root.rotated) {
-					if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
-						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
-					}
-					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
-						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
-					}
-				} else if (!this.$root.rotated) {
-					if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
-						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
-					}
-					else {
-						var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
-						e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
-					}
-				}
-		}
-	}
+            for (var i = 0; i < size; i++)
+                if(this.$root.rotated) {
+                    if (parseInt(setCords.split("").reverse().join("")[0]) + size <= this.cols) {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + i) +'"]');
+                        e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
+                    }
+                    else {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - i) +'"]');
+                        e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
+                    }
+                } else if (!this.$root.rotated) {
+                    if (document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]') != null) {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) + (i * this.cols)) +'"]');
+                        e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
+                    }
+                    else {
+                        var e = document.querySelector('[data-cords="'+ (parseInt(setCords) - ((size - i) * this.cols)) +'"]');
+                        e.className  = e.className == 'placed-tile' ? 'placed-tile' : 'tile';
+                    }
+                }
+        }
+    }
 
 });
 
 Vue.component('opponent-board', {
-	template: "#opponent-board-template",
-	props: ['cols', 'rows'],
+    template: "#opponent-board-template",
+    props: ['cols', 'rows'],
 
-	methods: {
-		fire: function(el) {
+    methods: {
+        fire: function(el) {
 
-			if(!(this.$root.ready && this.$root.opponentReady && this.$root.canFire)) return;
+            if(!(this.$root.ready && this.$root.opponentReady && this.$root.canFire)) return;
 
-			if(el.currentTarget.getAttribute('data-hittable') == 'true') {
+            if(el.currentTarget.getAttribute('data-hittable') == 'true') {
 
-				socket.emit('fire', {'playerState': this.playerState, 'cords' : parseInt(el.currentTarget.getAttribute('data-opcords')) } );
+                socket.emit('fire', {'playerState': this.playerState, 'cords' : parseInt(el.currentTarget.getAttribute('data-opcords')) } );
 
-				el.currentTarget.setAttribute('data-hittable', 'false');
-			}
-		}
-	}
+                el.currentTarget.setAttribute('data-hittable', 'false');
+            }
+        }
+    }
 
 });
 
 Vue.filter('convertChar', function(n) {
-	return String.fromCharCode(64+n);
+    return String.fromCharCode(64+n);
 });
 
 var vm = new Vue({
-	el: "#game",
+    el: "#game",
 
-	data: {
-		ships: [],	
-		selectedShip: null,
-		statusMessage: 'Waiting for opponent',
-		rotated: false, //vertical
-		opponentReady: false,
-		ready: false,
-		playerState: null,
-		canFire: false,
+    data: {
+        ships: [],  
+        selectedShip: null,
+        statusMessage: 'Waiting for opponent',
+        rotated: false, //vertical
+        opponentReady: false,
+        ready: false,
+        playerState: null,
+        canFire: false,
         room: null
-	},
+    },
 
-	methods: {
-		setSelectedShip: function(ship) {
-			this.selectedShip = ship;
-		}
-	},
+    methods: {
+        setSelectedShip: function(ship) {
+            this.selectedShip = ship;
+        },
+        sendMessage: function() {
 
-	computed: {
+            var tbox = document.querySelector('#messages');
+            var mes = document.querySelector('.chatmessage');
+            var li = document.createElement('li');
+            li.innerText = "You said: " + mes.value;
+            tbox.appendChild(li);
+            socket.emit('message', mes.value);
+            mes.value = '';
+            tbox.scrollTop = tbox.scrollHeight;
 
-		isHost: function() {
-			if (window.location.pathname == '/')
-				return true;
+        }
+    },
 
-			return false;
-		},
+    computed: {
 
-		ready: function() {
+        isHost: function() {
+            if (window.location.pathname == '/')
+                return true;
 
-			if (this.ships.length == 0) return;
+            return false;
+        },
 
-			var ready = true;
+        ready: function() {
 
-			this.ships.forEach(function(element, index) {
-				if (element.amount > 0)
-					ready = false;
-			});
+            if (this.ships.length == 0) return;
 
-			if (ready) {
-				this.ready = true;
+            var ready = true;
 
-				var locations = [];
+            this.ships.forEach(function(element, index) {
+                if (element.amount > 0)
+                    ready = false;
+            });
 
-				var tiles = document.querySelectorAll('.placed-tile');
+            if (ready) {
+                this.ready = true;
 
-				for (var i = 0; i < tiles.length; i++)
-					locations.push(parseInt(tiles[i].getAttribute('data-cords')));
-				
-				socket.emit('ready', {'playerState' : this.playerState, 'locations' : locations });
-			}
+                var locations = [];
 
-			return ready;
+                var tiles = document.querySelectorAll('.placed-tile');
 
-		}
-	}
+                for (var i = 0; i < tiles.length; i++)
+                    locations.push(parseInt(tiles[i].getAttribute('data-cords')));
+                
+                socket.emit('ready', {'playerState' : this.playerState, 'locations' : locations });
+            }
+
+            return ready;
+
+        }
+    }
 
 });
 
