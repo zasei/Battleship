@@ -1,7 +1,7 @@
 # Battleship
 Multiplayer battleship game made with Vue.js, socket.io and Node.js
 
-![alt tag](http://i.imgur.com/5qRAPcv.png)
+![alt tag](http://i.imgur.com/IS35dN6.png)
 
 ## Todo
 - [x] Implement turns
