@@ -22,5 +22,5 @@ Multiplayer battleship game made with Vue.js, socket.io and Node.js
 - [x] Show each other's positions when the game is over
 - [x] Chatbox
 - [ ] Re-match functionality
-- [ ] Place ships instead of tiles
+- [ ] Better graphics
 - [ ] Error handling
