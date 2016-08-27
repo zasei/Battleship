@@ -281,16 +281,20 @@ var vm = new Vue({
             this.selectedShip = ship;
         },
         sendMessage: function() {
-
             var tbox = document.querySelector('#messages');
             var mes = document.querySelector('.chatmessage');
             var li = document.createElement('li');
-            li.innerText = "You said: " + mes.value;
+            
+            var date = new Date();
+            var hour = date.getHours();
+            var minute = date.getMinutes();
+            var time = "[" + hour + ":" + minute + "]";
+
+            li.innerText = time + " You said: " + mes.value;
             tbox.appendChild(li);
             socket.emit('message', mes.value);
             mes.value = '';
             tbox.scrollTop = tbox.scrollHeight;
-
         }
     },
 
