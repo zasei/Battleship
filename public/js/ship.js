@@ -290,9 +290,12 @@ var vm = new Vue({
             var minute = date.getMinutes();
             var time = "[" + hour + ":" + minute + "]";
 
-            li.innerText = time + " You said: " + mes.value;
-            tbox.appendChild(li);
-            socket.emit('message', mes.value);
+            if (mes.value != "") {
+                li.innerText = time + " You said: " + mes.value;
+                tbox.appendChild(li);
+                socket.emit('message', mes.value);
+            }
+            
             mes.value = '';
             tbox.scrollTop = tbox.scrollHeight;
         }
