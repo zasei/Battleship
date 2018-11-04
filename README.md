@@ -5,9 +5,8 @@ Multiplayer battleship game made with Vue.js, socket.io and Node.js
 
 ## Installation
 
-    git clone https://github.com/avanerk/Battleship.git ~/ && cd ~/Battleship
-    npm install
-    bower install
+    git clone https://github.com/avanerk/Battleship.git
+    cd Battleship && npm install && bower install
     node app.js
     
   open 127.0.0.1:3000 in your browser
