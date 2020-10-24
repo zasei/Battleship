@@ -4,7 +4,8 @@
   "description": "Multiplayer battleship",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "author": "Arend van Erk",
   "license": "GNU",
@@ -12,6 +13,9 @@
     "express": "^4.13.4",
     "nedb": "^1.8.0",
     "socket.io": "^1.4.5",
-    "uniqid": "^1.0.0"
+    "uniqid": "^1.0.0",
+    "bootstrap": "^3.3.6",
+    "socket.io-client": "^1.4.5",
+    "vue": "^1.0.19"
   }
 }

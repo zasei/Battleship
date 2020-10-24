@@ -9,7 +9,7 @@ var io = require('./sockets').listen(http, rooms);
 var port = 3000;
 var DEBUG = true;
 
-app.use(express.static(__dirname + '/bower_components'));
+app.use(express.static(__dirname + '/node_modules'));
 app.use(express.static(__dirname + '/public/'));
 
 app.locals.pretty = true;
